@@ -172,10 +172,10 @@
 
 ;;;;;Sample twitter OAuth 1.0a for API authentication
 (define twitter-oauth (new oauth-single-user%  
-     [consumer-key "n4Bk8XrSSjEhTZPCASOQDJvWi"]
-     [consumer-secret "niTJzSwcOzNrKYrWhcqYffWrBpdMqMbydmnXspt5bYnmmov80A"]
-     [access-token "1055029678334009344-8iBju1rGfLj7vfrruDGs42PZ404o6C"]
-     [access-token-secret "kpHNSWgpYZ8oYJPAoxIknwHw0P9ZmRy2FeiCrebK4q0Tr"]))
+     [consumer-key "-----"]
+     [consumer-secret "--"]
+     [access-token "--"]
+     [access-token-secret "--"]))
 
 
 ;(send twitter-oauth get-request 
@@ -189,13 +189,13 @@
 ;(send twitter-oauth get-request 
 ;  "https://api.twitter.com/1.1/search/tweets.json" 
 ;  (list (cons 'q country)))
-;  (list (cons 'q country) (cons 'count "10") (cons 'until "2018-10-01") (cons 'geocode "0.316667,32.583330,1km")))
+;  (list (cons 'q country) (cons 'count "10") (cons 'until "2020-10-01") (cons 'geocode "0.316667,32.583330,1km")))
 ;  (list (cons 'q country) (cons 'count 100) (cons 'since_id 967824267948773377) (cons 'geocode "0.316667,32.583330,1km")))
 ;  (list (cons 'q country) (cons 'since_id "967824267948773377") (cons 'geocode "0.316667,32.583330,1km")))
 
 ;(define tweeterdata (send twitter-oauth get-request 
 ;  "https://api.twitter.com/1.1/tweets/search/30day/prod.json" 
-;  (list (cons 'query "place_country:UG")(cons 'maxResults "100") (cons 'fromDate "202010311200") (cons 'toDate "20210312359"))))
+;  (list (cons 'query "place_country:UG")(cons 'maxResults "100") (cons 'fromDate "201910011200") (cons 'toDate "202010312359"))))
 
 ;writing the Twitter data to a file
 ;(define out (open-output-file "tweeterdata_uganda_combined.json"))
@@ -230,10 +230,10 @@
 (define input_tweets (port->string (open-input-file "twitterdata_uganda.json")))
 
 
-;changing all words to lower case, then removing urls,then remove punctuation makes
+;changing all words to lower case, then removing urls,then remove punctuation marks
 ;the normalizing the space between words
-;;; the cleaned data is save as cleanedinutdata and the input is rawiputdata
-(define cleanedinutdata (string-normalize-spaces
+;;; the cleaned data is save as clean-lowercase-punct-normalize and the input is rawiputdata
+(define clean-lowercase-punct-normalize (string-normalize-spaces
                          (remove-punctuation
                           (remove-false
                            (remove-true
@@ -246,22 +246,22 @@
 
 ;;This proceedure outputs quoted strings in the list. The order of the strings is not maintained from input to output
 ;;Further cleaning is done by removing stop words using the defaults lexicon (SMART)
-;;INPUT: cleanedinutdata
-;;OUTPUT: cleanedinutdata1
-;(define cleanedinutdata2 (remove-stopwords (string-split cleanedinutdata)))
+;;INPUT: clean-lowercase-punct-normalize
+;;OUTPUT: clean-remove-stopwords
+;(define cleanedinputdata2 (remove-stopwords (string-split clean-lowercase-punct-normalize)))
 
 ;;Returns a list of pairs. Each pair consists of a unique word/token from str with its frequency.
 ;;the number of times a word occurs in the tweets selected
-;;INPUT:cleanedinutdata
-;;OUTPUT:cleanedinutdata1
-(define cleanedinutdata1 (document->tokens cleanedinutdata #:sort? #t))
+;;INPUT:clean-lowercase-punct-normalize
+;;OUTPUT:clean-remove-stopwords
+(define clean-remove-stopwords (document->tokens clean-lowercase-punct-normalize #:sort? #t))
 
 
 ;;; Using the nrc lexicon, we can label each (non stop-word) with an
 ;;; emotional label.
-;;INPUT:cleanedinutdata1
+;;INPUT:clean-remove-stopwords
 ;;OUTPUT:sentiment
-(define sentiment (list->sentiment cleanedinutdata1 #:lexicon 'nrc))
+(define sentiment (list->sentiment clean-remove-stopwords #:lexicon 'nrc))
 
 
 
@@ -269,20 +269,20 @@
 ;;; (token sentiment freq) for each token in the document. Many words will have 
 ;;; the same sentiment label, so we aggregrate (by summing) across such tokens.
 ;;INPUT:sentiment
-;;OUTPUT:data1
-(define data1 (aggregate sum ($ sentiment 'sentiment) ($ sentiment 'freq)))
+;;OUTPUT:words
+(define words (aggregate sum ($ sentiment 'sentiment) ($ sentiment 'freq)))
 
 (newline)
 
 ;Sample list output of the aggregate data
 ;->'(("positive" 105944)("trust" 71888)("disgust" 10463)("fear" 11507)("negative" 24929)("sadness" 11003)
 ;                     ("anticipation" 24320)("surprise" 12054)("joy" 7452)("anger" 1820)) 
-data1
+words
 
 (newline)
 (newline)
 ;;;We can visualize this result as a barplot (discrete-histogram)
-(let ([counts data1])
+(let ([counts words])
   (parameterize ((plot-width 800))
     (plot (list
 	   (tick-grid)
@@ -296,13 +296,13 @@ data1
 ;;;Using the bing lexicon to determine the ratio of
 ;;; positive-to-negative words
 ;;INPUT:sentiment1
-;;OUTPUT:cleanedinutdata1
+;;OUTPUT:clean-remove-stopwords
 (newline)
 (newline)
 (display "SENTIMENTAL POLARITY USING BING LEXICON")
 (newline)
 (newline)
-(define sentiment1 (list->sentiment cleanedinutdata1 #:lexicon 'bing))
+(define sentiment1 (list->sentiment clean-remove-stopwords #:lexicon 'bing))
 (define data2 (aggregate sum ($ sentiment1 'sentiment) ($ sentiment1 'freq)))
 (parameterize ([plot-height 200])
   (plot (discrete-histogram
