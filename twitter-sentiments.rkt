@@ -195,7 +195,7 @@
 
 ;(define tweeterdata (send twitter-oauth get-request 
 ;  "https://api.twitter.com/1.1/tweets/search/30day/prod.json" 
-;  (list (cons 'query "place_country:UG")(cons 'maxResults "100") (cons 'fromDate "201810311200") (cons 'toDate "201810312359"))))
+;  (list (cons 'query "place_country:UG")(cons 'maxResults "100") (cons 'fromDate "202010311200") (cons 'toDate "20210312359"))))
 
 ;writing the Twitter data to a file
 ;(define out (open-output-file "tweeterdata_uganda_combined.json"))
@@ -227,7 +227,7 @@
   (regexp-replace* #px"favorite" str " "))
 
 ;Reads all characters from in and returns them as a string.Reading from a file in this case we are reading from tweeterdata_uganda_combined.json
-(define input_tweets (port->string (open-input-file "tweeterdata_uganda_02102018_1.json")))
+(define input_tweets (port->string (open-input-file "twitterdata_uganda.json")))
 
 
 ;changing all words to lower case, then removing urls,then remove punctuation makes
